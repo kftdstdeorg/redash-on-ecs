@@ -16,16 +16,16 @@ Parameters:
     Type: String
     Description: >
       Set your S3 bucket URL to host cfn templates with the format.
-    Default:
-      https://s3-<<YOUR_AWS_REGION>>.amazonaws.com/<<YOUR_S3_BUCKET_NAME>>/
+    Default: 
+      https://data-vpc-cfn-templates.s3.us-east-1.amazonaws.com/
   CertificateArn:
     Type: String
     Description: >
       Set ARN of an ACM SSL certificate applied to the RedashDomain
-    Default: arn:aws:acm:<<YOUR_AWS_REGION>>:<<YOUR_AWS_ACCOUNT_ID>>:certificate/<<YOUR_CERTIFICATE_ID>>
+    Default: arn:aws:acm:us-east-1:050824545721:certificate/put-id-here
   KeyPairName:
     Type: AWS::EC2::KeyPair::KeyName
-    Default: ""
+    Default: "dsde-ubongo-key-pair"
     Description: >
       Set a name of key pair for redash app EC2 instance
   RedashZoneName:
@@ -33,6 +33,11 @@ Parameters:
     Description: >
       Set your exiting zone name to host redash of Route53.
     Default: example.com
+  RedashDbEndpointPath:
+    Type: String
+    Description: >
+      RDS endpoint path
+    Default: ""
   RedashDomainName:
     Type: String
     Description: >
@@ -42,12 +47,12 @@ Parameters:
     Type: String
     Description: >
       Set your ARN of ECS TaskDefinition for redash app with the format.
-    Default: arn:aws:ecs:<<YOUR_AWS_REGION>>:<<YOUR_AWS_ACCOUNT_ID>>:task-definition/redash-app:<<revision>>
+    Default: arn:aws:ecs:us-east-1:050824545721:task-definition/redash-ecs-task:3
   RedashBotTaskDefinitionArn:
     Type: String
     Description: >
       Set your ARN of ECS TaskDefinition for redash bot with the format.
-    Default: arn:aws:ecs:<<YOUR_AWS_REGION>>:<<YOUR_AWS_ACCOUNT_ID>>:task-definition/redash-bot:<<revision>>
+    Default: arn:aws:ecs:us-east-1:050824545721:task-definition/redash-ecs-task:3
   ShouldRedashBotLaunched:
     Description: >
       If this parameter is set to true, redash bot is launched.
@@ -134,7 +139,7 @@ Resources:
         !Join ["", [!Ref TemplateBaseURL, "infrastructure/ecs-cluster.yaml"]]
       Parameters:
         EnvironmentName: !Ref AWS::StackName
-        InstanceType: t3.medium
+        InstanceType: t3.small
         ClusterSize: 1
         ClusterNamePrefix: redash-app
         VPC: !GetAtt VPC.Outputs.VPC
@@ -176,22 +181,22 @@ Resources:
         RedashDomainName: !Ref RedashDomainName
         RedashZoneName: !Ref RedashZoneName
 
-  RedashBotService:
-    Condition: ShouldRedashBotLaunched
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Join ["", [!Ref TemplateBaseURL, "service/redash-bot.yaml"]]
-      Parameters:
-        VPC: !GetAtt VPC.Outputs.VPC
-        Cluster: !GetAtt RedashBotECS.Outputs.Cluster
-        DesiredCount: 1
-        TaskDefinitionArn: !Ref RedashBotTaskDefinitionArn
+  # RedashBotService:
+  #   Condition: ShouldRedashBotLaunched
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: !Join ["", [!Ref TemplateBaseURL, "service/redash-bot.yaml"]]
+  #     Parameters:
+  #       VPC: !GetAtt VPC.Outputs.VPC
+  #       Cluster: !GetAtt RedashBotECS.Outputs.Cluster
+  #       DesiredCount: 1
+  #       TaskDefinitionArn: !Ref RedashBotTaskDefinitionArn
 
-  LifecycleHook:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL:
-        !Join ["", [!Ref TemplateBaseURL, "infrastructure/lifecyclehook.yaml"]]
-      Parameters:
-        Cluster: !GetAtt RedashAppECS.Outputs.Cluster
-        ECSAutoScalingGroupName: !GetAtt RedashAppECS.Outputs.ECSAutoScalingGroupName
+  # LifecycleHook:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL:
+  #       !Join ["", [!Ref TemplateBaseURL, "infrastructure/lifecyclehook.yaml"]]
+  #     Parameters:
+  #       Cluster: !GetAtt RedashAppECS.Outputs.Cluster
+  #       ECSAutoScalingGroupName: !GetAtt RedashAppECS.Outputs.ECSAutoScalingGroupName
