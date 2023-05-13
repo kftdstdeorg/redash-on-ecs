@@ -1,95 +1,89 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'VPC: Legacy public and private subnets in two availability zones, a cloudonaut.io template'
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+    - Label:
+        default: 'VPC Parameters'
+      Parameters:
+      - VPC
+      - PublicSubnets
+      - PrivateSubnets
+      - PrivateSubnet1
+      - PrivateSubnet2
+      - PublicSubnet1
+      - PublicSubnet2
 Description: >
   This template deploys a VPC, with a pair of public and private subnets spread 
   across two Availabilty Zones. It deploys an Internet Gateway, with a default 
   route on the public subnets. It deploys a pair of NAT Gateways (one in each AZ), 
   and default routes for them in the private subnets.
-
+      
 Parameters:
   EnvironmentName:
     Description: An environment name that will be prefixed to resource names
     Type: String
-
+    
   VpcCIDR:
     Description: Please enter the IP range (CIDR notation) for this VPC
     Type: String
-    Default: 172.30.0.0/16
-
+    Default: 10.0.0.0/16
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/16"
+    
   PublicSubnet1CIDR:
     Description: Please enter the IP range (CIDR notation) for the public subnet in the first Availability Zone
     Type: String
-    Default: 10.192.10.0/24
+    Default: 10.0.0.0/20
 
   PublicSubnet2CIDR:
     Description: Please enter the IP range (CIDR notation) for the public subnet in the second Availability Zone
     Type: String
-    Default: 10.192.11.0/24
+    Default: 10.0.16.0/20
 
   PrivateSubnet1CIDR:
     Description: Please enter the IP range (CIDR notation) for the private subnet in the first Availability Zone
     Type: String
-    Default: 10.192.20.0/24
+    Default: 10.0.128.0/20
 
   PrivateSubnet2CIDR:
     Description: Please enter the IP range (CIDR notation) for the private subnet in the second Availability Zone
     Type: String
-    Default: 10.192.21.0/24
+    Default: 10.0.144.0/20
+    
+  VPC:
+    Description: Please enter the existing VPC Id 
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-04eedbe41ac02cac8
+  PublicSubnet1:
+    Description: Subnet A public.
+    Type: AWS::EC2::Subnet::Id
+    Default: subnet-003f75c0e47f0b090
+  PublicSubnet2:
+    Description: Subnet B public.
+    Type: AWS::EC2::Subnet::Id
+    Default: subnet-028a9b53678a0bf64
+  PrivateSubnet1:
+    Description: Subnet A private.
+    Type: AWS::EC2::Subnet::Id
+    Default: subnet-002d16113b7c1d15d
+  PrivateSubnet2:
+    Description: Subnet B private.
+    Type: AWS::EC2::Subnet::Id
+    Default: subnet-06a7f1609a9a138a7
+  # NatGateway1EIP:
+  #   Description: NatGateway 1.
+  #   Type: AWS::EC2::NatGateway::AllocationId
+  #   Default: nat-0f0c55860295e92a5
+  # NatGateway2EIP:
+  #   Description: NatGateway 2.
+  #   Type: AWS::EC2::NatGateway::AllocationId
+  #   Default: nat-0f0c55860295e92a5
+
 
 Resources:
-  VPC:
-    Type: AWS::EC2::VPC
-    Properties:
-      CidrBlock: !Ref VpcCIDR
-      EnableDnsHostnames: true
-      Tags:
-        - Key: Name
-          Value: !Ref EnvironmentName
-
-
-  PublicSubnet1:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref VPC
-      AvailabilityZone: !Select [0, !GetAZs ""]
-      CidrBlock: !Ref PublicSubnet1CIDR
-      MapPublicIpOnLaunch: true
-      Tags:
-        - Key: Name
-          Value: !Sub ${EnvironmentName} Public Subnet (AZ1)
-
-  PublicSubnet2:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref VPC
-      AvailabilityZone: !Select [1, !GetAZs ""]
-      CidrBlock: !Ref PublicSubnet2CIDR
-      MapPublicIpOnLaunch: true
-      Tags:
-        - Key: Name
-          Value: !Sub ${EnvironmentName} Public Subnet (AZ2)
-
-  PrivateSubnet1:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref VPC
-      AvailabilityZone: !Select [0, !GetAZs ""]
-      CidrBlock: !Ref PrivateSubnet1CIDR
-      MapPublicIpOnLaunch: false
-      Tags:
-        - Key: Name
-          Value: !Sub ${EnvironmentName} Private Subnet (AZ1)
-
-  PrivateSubnet2:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref VPC
-      AvailabilityZone: !Select [1, !GetAZs ""]
-      CidrBlock: !Ref PrivateSubnet2CIDR
-      MapPublicIpOnLaunch: false
-      Tags:
-        - Key: Name
-          Value: !Sub ${EnvironmentName} Private Subnet (AZ2)
-
-
+  NullResource:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    
 Outputs:
   VPC:
     Description: A reference to the created VPC
@@ -119,3 +113,8 @@ Outputs:
     Description: A reference to the private subnet in the 2nd Availability Zone
     Value: !Ref PrivateSubnet2
 
+  # NatGateway1EIP:
+  #   Value: !Ref NatGateway1EIP
+
+  # NatGateway2EIP:
+  #   Value: !Ref NatGateway2EIP

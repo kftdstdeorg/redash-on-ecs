@@ -1,6 +1,7 @@
 version: 1
 task_definition:
-  task_execution_role: ecsTaskExecutionRoleWithSsmRead-YOUR_STACK_NAME
+  task_execution_role: ecsTaskExecutionRoleWithSsmRead-redash-app
+  task_role: ecsTaskExecutionRoleWithSsmRead-redash-app
   services:
     server:
       secrets:

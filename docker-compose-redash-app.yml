@@ -1,6 +1,6 @@
 version: "2"
 x-redash-service: &redash-service
-  image: redash/redash:8.0.0.b32245
+  image: redash/redash:10.1.0.b50633
 services:
   server:
     <<: *redash-service
@@ -17,6 +17,7 @@ services:
     logging:
       driver: awslogs
       options:
+        #awslogs-create-group: true
         awslogs-region: $AWS_REGION
         awslogs-group: $AWS_LOG_GROUP
         awslogs-stream-prefix: redash-server

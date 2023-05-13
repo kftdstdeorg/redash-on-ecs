@@ -271,7 +271,7 @@ Resources:
   ECSTaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ecsTaskExecutionRoleWithSsmRead-${EnvironmentName}
+      RoleName: ecsTaskExecutionRoleWithSsmRead-redash-app
       Path: /
       AssumeRolePolicyDocument: |
         {

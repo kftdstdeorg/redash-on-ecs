@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
+
+
+
 #--------------------------------------------------------#
 ###-----Define necessary environment variables if passed -----##
 ##------------------------------------------------------#
 if [ ! -z "$1" ]; then    
     echo "Loading variables from $1"
     source $1 #many key variables returned
+    app_name=${STACK_NAME}
     confdir=logs/configs
     logdir=logs/outputs
     mkdir -p $confdir $logdir
@@ -14,6 +18,7 @@ else
     exit
 fi
 
+profile=${2:-kifiya}
 region=${AWS_REGION}
 if [ ! -z $profile ] && [ ! -z $region ]; then
     auth="--profile $profile --region $region"
@@ -22,6 +27,8 @@ else
     echo "config file need to have profile and region parameters!"
     exit
 fi
+echo "using the following aws credential: $auth"
+
 
 #--------------------------------------------------------#
 ###-----function to create or update stack
@@ -46,16 +53,19 @@ function create-or-update-stack() {
         exit -1
     fi
 
+
     shopt -s failglob
     set -eu -o pipefail
 
-    echo "Checking if stack exists ..."
-
+    echo "Checking if stack exists for stack_name=$1 ... "
+    
+    
     if ! aws cloudformation describe-stacks --stack-name $1 $auth ; then
         
-        echo -e "\nStack does not exist, creating ..."
+        echo -e "\nStack=$1 does not exist, creating ..."
+        echo "passed stack params are: params=${@:2}"
         aws cloudformation create-stack \
-            $auth \            
+            $auth \
             --stack-name $1 \
             ${@:2}
         
@@ -154,14 +164,13 @@ else
     cat $fname
 fi
 
-
 #--------------------------------------------------------#
 ###-------- main logic -----##
 ##------------------------------------------------------#
 
 #copy templates to s3
 echo "sync cloudformation template to s3 bucket .."
-aws s3 sync cfn-templates/ s3://data-vpc-cfn-templates/  $auth
+aws s3 sync cfn-templates/ s3://kft-data-vpc-cfn-templates/  $auth
 
 
 clf_template="cfn-templates/master.yaml"

@@ -52,7 +52,7 @@ Resources:
       VPCZoneIdentifier: !Ref Subnets
       LaunchConfigurationName: !Ref ECSLaunchConfiguration
       MinSize: !Ref ClusterSize
-      MaxSize: 5
+      MaxSize: 2
       DesiredCapacity: !Ref ClusterSize
       Tags:
         - Key: Name
@@ -63,7 +63,7 @@ Resources:
         Timeout: PT15M
     UpdatePolicy:
       AutoScalingRollingUpdate:
-        MinInstancesInService: 1
+        MinInstancesInService: 0
         MaxBatchSize: 1
         PauseTime: PT15M
         SuspendProcesses:
@@ -89,6 +89,10 @@ Resources:
           trap '/opt/aws/bin/cfn-signal -e 1 --stack ${AWS::StackName} --resource ECSAutoScalingGroup --region ${AWS::Region}' ERR
           yum update -y
           yum install -y aws-cfn-bootstrap
+          #if [ ! -f /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl ]; then
+          #   yum install -y awslogs
+          #fi
+          #/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -m ec2 -a start
           /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource ECSLaunchConfiguration --region ${AWS::Region}
           /opt/aws/bin/cfn-signal -e 0 --stack ${AWS::StackName} --resource ECSAutoScalingGroup --region ${AWS::Region}
 
@@ -138,7 +142,7 @@ Resources:
             }]
         }
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+        - arn:aws:iam::aws:policy/service-role/AmazonSSMManagedInstanceCore
       Policies:
         - PolicyName: ecs-service
           PolicyDocument:
