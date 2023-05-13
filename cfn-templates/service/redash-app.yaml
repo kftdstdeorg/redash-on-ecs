@@ -207,10 +207,10 @@ Resources:
         # also /login can be recirected to /setup with 302 status
         HttpCode: 200-302
       HealthCheckEnabled: !If [isTaskDefinitionArnDefined, true, false]
-      HealthCheckIntervalSeconds: 10
+      HealthCheckIntervalSeconds: 60
       HealthCheckPath: /
       HealthCheckProtocol: HTTP
-      HealthCheckTimeoutSeconds: 5
+      HealthCheckTimeoutSeconds: 30
       HealthyThresholdCount: 2
   ListenerRule:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
